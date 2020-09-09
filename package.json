@@ -1,0 +1,10 @@
+{
+  "name": "youtube-video-maker",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/yurei-dev1402/youtube-video-maker.git",
+  "license": "MIT",
+  "dependencies": {
+    "readline-sync": "^1.4.10"
+  }
+}

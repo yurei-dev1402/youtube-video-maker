@@ -1,18 +1,29 @@
 const algorithmia = require('algorithmia');
-const apiKey = require('../credentials/algorithmia.json').apiKey;
 const sentenceBoundaryDetection = require('sbd');
+
+const apiKey = require('../credentials/algorithmia.json').apiKey;
+const watsonApiKey = require('../credentials/watson.json').apikey;
+var NaturalLanguageUnderstandingV1 = require('watson-developer-cloud/natural-language-understanding/v1.js');
+ 
+var nlu = new NaturalLanguageUnderstandingV1({
+  iam_apikey: watsonApiKey,
+  version: '2018-04-05',
+  url: 'https://gateway.watsonplatform.net/natural-language-understanding/api/'
+});
 
 async function robot(dataStructure)
 {
 	await downloadContentFromWikipedia(dataStructure);
 	cleanContent(dataStructure);
 	breakContentIntoCentences(dataStructure);
+	limitMaximumCentences(dataStructure);
+	await fetchKeyords(dataStructure);
 
 	async function downloadContentFromWikipedia(dataStructure)
 	{
 		const algorithmiaAlthenticated = algorithmia(apiKey);
 		const WikipediaAlgorithm = algorithmiaAlthenticated.algo('web/WikipediaParser/0.1.2');
-		const WikipediaResponse = await WikipediaAlgorithm.pipe(dataStructure.searchTerm);
+		const WikipediaResponse = await WikipediaAlgorithm.pipe({ "lang":  dataStructure.lang, "articleName": dataStructure.searchTerm} );
 		const WikipediaContent = WikipediaResponse.get();
 		
 		dataStructure.sourceContentOriginal = WikipediaContent.content;
@@ -55,6 +66,40 @@ async function robot(dataStructure)
 				images: []
 			});
 		});
+	}
+
+	function limitMaximumCentences(dataStructure)
+	{
+		dataStructure.sentences = dataStructure.sentences.slice(0, dataStructure.maximumSentences);
+	}
+
+	async function getKeywords(sentence)
+	{
+		return new Promise((resolve, reject) => {
+			nlu.analyze({
+				text: sentence,
+				features: {
+					keywords: {}
+				}
+			}, (err, result) => {
+				if(err)
+				{
+					throw err;
+				}
+				const keywords = result.keywords.map(keyword => {
+					return keyword.text;
+				});
+				resolve(keywords);
+			});
+		});
+	}
+
+	async function fetchKeyords(dataStructure)
+	{
+		for(const sentence of dataStructure.sentences)
+		{
+			sentence.keywords = await getKeywords(sentence.text);
+		}
 	}
 }
 

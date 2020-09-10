@@ -1,16 +1,17 @@
 const state = require('./state');
 const googleapi = require('googleapis').google;
 const googleCredentials = require('../credentials/google.json');
-
+const downloader = require('image-downloader');
 const customSearch = googleapi.customsearch('v1');
 
 async function robot()
 {
 	const dataStructure = state.load();
 
-	await getImagesFromData(dataStructure);
+	//await getImagesFromData(dataStructure);
+	await downloadImages(dataStructure);
 
-	state.save(dataStructure);
+	//state.save(dataStructure);
 
 	async function getImagesFromData(dataStructure)
 	{
@@ -39,6 +40,45 @@ async function robot()
 
 		return imageUrl;
 
+	}
+
+	async function downloadImages(dataStructure)
+	{
+		dataStructure.downladImages = [];
+
+		for(let index = 0; index < dataStructure.sentences.length; index++)
+		{
+			const images = dataStructure.sentences[index].images;
+
+			for(let imndex = 0; imndex < images.length; imndex++)
+			{
+				const image = images[imndex];
+
+				try
+				{
+					if(dataStructure.downladImages.includes(image))
+					{
+						throw new Error('Imagem já baixada;');
+					}
+					await downloaderImage(image, `${index}-original.png`);
+					dataStructure.downladImages.push(image);
+					console.log(`${index} ${imndex} [Images] Image baixada com sucesso: ${image}`);
+					break
+				}
+				catch(err)
+				{
+					console.log(`[Images] Erro ao baixar: ${image} ${err}`);
+				}
+			}
+		}
+	}
+
+	async function downloaderImage(url, filename)
+	{
+		return downloader.image({
+			url,
+			dest: `./src/content/${filename}`
+		});
 	}
 }
 

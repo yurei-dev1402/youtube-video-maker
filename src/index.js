@@ -10,8 +10,8 @@ async function start()
 	//robots.input();
 	//await robots.text();
 	await robots.image();
-	
-	console.dir(robots.state.load(), {depth: null});
+
+	//console.dir(robots.state.load(), {depth: null});
 }
 
 start();

@@ -110,3 +110,4 @@ src/credentials/*.json
 #content
 
 data.json
+src/content/*.png

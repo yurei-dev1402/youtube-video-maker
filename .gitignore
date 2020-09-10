@@ -106,3 +106,7 @@ dist
 #credentials
 
 src/credentials/*.json
+
+#content
+
+data.json

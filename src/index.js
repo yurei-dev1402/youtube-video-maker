@@ -1,43 +1,15 @@
-const readline = require('readline-sync');
-
 const robots = {
+	input: require('./robots/read.js'),
 	text: require('./robots/text'),
+	state: require('./robots/state')
 }
 
 async function start()
 {
-	const dataStructure = {
-		maximumSentences: 7
-	};
+	robots.input();
+	await robots.text();
 
-	dataStructure.lang = getLangWikipedia(),
-	dataStructure.searchTerm = returnSearchTerm(),
-	dataStructure.serchPrefix = returnSearchPrefix(),
-
-	await robots.text(dataStructure);
-
-	function returnSearchTerm() 
-	{
-		return dataStructure.lang == 'en' ? readline.question('Type Wikipedia search term: ') : readline.question('Escreva o termo de busca do Wikipedia: ');
-	}
-
-	function returnSearchPrefix()
-	{
-		const prefixes = dataStructure.lang == 'en' ? ['Who is', 'What is', 'The History of'] : ['Quem é', 'O que é', 'A historia de'];
-		const selectedPrefix = dataStructure.lang == 'en' ? readline.keyInSelect(prefixes, 'Chose one option for prefix: ') : readline.keyInSelect(prefixes, 'Escolha uma opção para o prefixo: ');
-
-		return prefixes[selectedPrefix];
-	}
-
-	function getLangWikipedia()
-	{
-		const langs = ['en', 'pt'];
-		const selectedLang = readline.keyInSelect(langs, 'Chose one option: ');
-
-		return langs[selectedLang];
-	}
-
-	console.log(JSON.stringify(dataStructure, null, 4));
+	console.dir(robots.state.load(), {depth: null});
 }
 
 start();
